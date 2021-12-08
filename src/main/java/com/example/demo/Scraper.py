@@ -14,7 +14,7 @@ fishList = []
 
 # Job Index
 def fishScrab():
-    URL = 'https://www.fishbase.us/FishWatcher/CollectionsList.php?what=all&sortby=species&allrec=on'
+    URL = 'https://www.fishbase.us/FishWatcher/CollectionsList.php?showAll=yes&what=all&sortby=species&allrec=on'
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
     fish_elems = []
@@ -60,7 +60,7 @@ def perFishScrab(fish):
         fish.abundance = tr_elems[18].find_all('td')[1].getText().strip();
         latArray = re.findall("([0-9]*[.][0-9]*)",tr_elems[8].find_all('td')[1].getText());
         longArray = re.findall("([0-9]*[.][0-9]*)",tr_elems[9].find_all('td')[1].getText());
-        if len(latArray) > 0:
+        if (len(latArray) > 0 and len(longArray) > 0):
             fish.lat = latArray
             fish.long = longArray
 
@@ -75,7 +75,7 @@ writer = csv.writer(f)
 writer.writerow(['Fish Name','Country','Location','Habitat','Water Type','Typical Depth','Abundance','Latitude','Longitude'])
 
 for fish in fishList:
-    if hasattr(fish, 'lat'):
+    if (hasattr(fish, 'lat') and hasattr(fish, 'long')):
         writer.writerow([fish.name,fish.country,fish.location,fish.habitatType,fish.waterType,fish.waterDepth,fish.abundance,fish.lat[len(fish.lat) - 1],fish.long[len(fish.long) - 1]])
 
 f.close()

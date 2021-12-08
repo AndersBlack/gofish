@@ -23,13 +23,13 @@ public class IndexController {
         return "index.html";
     }
 
-    @GetMapping("/test/testeryo")
+    @GetMapping("/apiTest/")
     public String testme(Model model){
-        System.out.println("Are you getting it?");
-        String straaang = "proof of concept indeed!";
-        String dtNow = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).format(LocalDateTime.now());
-        model.addAttribute("dtnow", dtNow);
-        model.addAttribute("gimmeStuff",straaang);
-        return "index.html";
+
+        //Lav dine test her min dude.
+        String apiRes = "Du laver ting her";
+        model.addAttribute("apiRes", apiRes);
+
+        return "apitest.html";
     }
 }
