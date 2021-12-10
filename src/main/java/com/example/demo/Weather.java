@@ -109,19 +109,19 @@ public class Weather{
     return result;
   }
 
-  public static String getSunrise1(){
+  public static String getSunrise1(Weather weather){
     return weather.sunrise1;
   }
 
-  public static String getSunrise2(){
+  public static String getSunrise2(Weather weather){
     return weather.sunrise2;
   }
 
-  public static String getSunset1(){
+  public static String getSunset1(Weather weather){
     return weather.sunset1;
   }
 
-  public static String getSunset2(){
+  public static String getSunset2(Weather weather){
     return weather.sunset2;
   }
 
