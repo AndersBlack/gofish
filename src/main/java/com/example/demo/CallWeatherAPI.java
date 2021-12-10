@@ -1,4 +1,4 @@
-package com.visualcrossing.weather.samples;
+package com.example.demo;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -25,7 +25,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class CallWeatherAPI{
-  public static String getWeather(String location) throws Exception{
+
+  //main method to get out the wanted information from our weather API
+  public static Weather getWeather(String location) throws Exception{
     String apiEndPoint = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
     String apiKey = "5CK8M2PR75WQ693V4MUGXBVEW";
     String unitGroup = "metric";
@@ -46,7 +48,7 @@ public class CallWeatherAPI{
     try {
 			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
 				System.out.printf("Bad response status code:%d%n", response.getStatusLine().getStatusCode());
-				return "";
+				return new Weather();
 			}
 
 			HttpEntity entity = response.getEntity();
@@ -58,43 +60,52 @@ public class CallWeatherAPI{
 		} finally {
 			response.close();
 		}
-    return rawResult;
-    // parseTimelineJson(rawResult);
+    Weather weather = parseWeatherInfoJson(rawResult);
+    return weather;
+
 
   }
-  // private static void parseTimelineJson(String rawResult) {
-  //
-	// 	if (rawResult==null || rawResult.isEmpty()) {
-	// 		System.out.printf("No raw data%n");
-	// 		return;
-	// 	}
-  //
-	// 	JSONObject timelineResponse = new JSONObject(rawResult);
-  //
-	// 	ZoneId zoneId=ZoneId.of(timelineResponse.getString("timezone"));
-  //
-	// 	System.out.printf("Weather data for: %s%n", timelineResponse.getString("resolvedAddress"));
-  //
-	// 	JSONArray values=timelineResponse.getJSONArray("days");
-  //
-	// 	System.out.printf("Date\tMaxTemp\tMinTemp\tPrecip\tSource%n");
-	// 	for (int i = 0; i < values.length(); i++) {
-	// 		JSONObject dayValue = values.getJSONObject(i);
-  //
-  //     ZonedDateTime datetime=ZonedDateTime.ofInstant(Instant.ofEpochSecond(dayValue.getLong("datetimeEpoch")), zoneId);
-  //
-  //     double maxtemp=dayValue.getDouble("tempmax");
-  //     double mintemp=dayValue.getDouble("tempmin");
-  //     double pop=dayValue.getDouble("precip");
-  //     String source=dayValue.getString("source");
-  //     System.out.printf("%s\t%.1f\t%.1f\t%.1f\t%s%n", datetime.format(DateTimeFormatter.ISO_LOCAL_DATE), maxtemp, mintemp, pop,source );
-  //   }
-	// }
-  public static void main(String[] arg){
-    try{
-      System.out.println(getWeather("1.477,125.235"));
-    } catch(Exception e){
-      System.out.println("Error");
+
+  // Parse the data from our raw results and mine the data we need for our app
+  private static Weather parseWeatherInfoJson(String rawResult) {
+
+		JSONObject weatherInfo = new JSONObject(rawResult);
+
+		ZoneId zoneId=ZoneId.of(weatherInfo.getString("timezone"));
+
+		JSONArray values=weatherInfo.getJSONArray("days");
+    JSONObject day1 = values.getJSONObject(0);
+    JSONObject day2 = values.getJSONObject(1);
+    double temp1 = day1.getDouble("temp");
+    double temp2 = day2.getDouble("temp");
+    double feelslike1 = day1.getDouble("feelslike");
+    double feelslike2 = day2.getDouble("feelslike");
+    double precip1 = day1.getDouble("precip");
+    double precip2 = day2.getDouble("precip");
+    double precipprob1 = day1.getDouble("precipprob");
+    double precipprob2 = day2.getDouble("precipprob");
+    String sunrise1 = day1.getString("sunrise");
+    String sunrise2 = day2.getString("sunrise");
+    String sunset1 = day1.getString("sunset");
+    String sunset2 = day2.getString("sunset");
+
+    JSONArray precipJSON = day1.getJSONArray("preciptype");
+    String[] preciptype1 = new String[precipJSON.length()];
+    for(int i = 0; i < precipJSON.length(); i++){
+      preciptype1[i] = precipJSON.getString(i);
     }
-  }
+
+    precipJSON = day2.getJSONArray("preciptype");
+    String[] preciptype2 = new String[precipJSON.length()];
+    for(int i = 0; i < precipJSON.length(); i++){
+      preciptype2[i] = precipJSON.getString(i);
+    }
+
+
+    String date1 = ZonedDateTime.ofInstant(Instant.ofEpochSecond(day1.getLong("datetimeEpoch")), zoneId).format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String date2 = ZonedDateTime.ofInstant(Instant.ofEpochSecond(day2.getLong("datetimeEpoch")), zoneId).format(DateTimeFormatter.ISO_LOCAL_DATE);
+    return new Weather(temp1,temp2,feelslike1,feelslike2,precip1,precip2,precipprob1,precipprob2,sunrise1,sunrise2,sunset1,sunset2,preciptype1,preciptype2,date1,date2);
+
+	}
+
 }
