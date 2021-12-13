@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
   crossorigin=""/>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     </head>
     <body>
 
@@ -16,8 +17,10 @@
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
       integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
       crossorigin=""></script>
-        <script>
-            var map = L.map('map').setView([40.516666666667, -77.033333333333], 13);
+        <script th:inline="javascript">
+
+            var markerCounter = 0;
+            var map = L.map('map').setView([56.60500251946917, 10.70068359375], 6);
 
             L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
                 attribution: 'GoFish',
@@ -27,18 +30,90 @@
                 zoomOffset: -1,
                 accessToken: 'pk.eyJ1IjoiYmxhY2tkdXgiLCJhIjoiY2t3dnRtM3doMWxnMDJvcXEzdDV3eXl5MCJ9.FCM2AN-cNIe9DM2FTGs7Fg'
             }).addTo(map);
+            
+            var markersLayer = L.featureGroup().addTo(map);
 
-            var popup = L.popup()
-            .setLatLng([40.516666666667, -77.033333333333])
-            .setContent('<p>Hello world!<br />This is a nice popup.</p>')
-            .openOn(map);
+            function findPointsInBound(bounds){
+              for (let i = 0; i < fishList.length; i++) {
+                var point = L.latLng(fishList[i].latitude, fishList[i].longitude)
+                if(bounds.contains(point)){
+                  markerCounter = markerCounter + 1;
+                  var circle = L.circle([fishList[i].latitude, fishList[i].longitude], {
+                      color: 'orange',
+                      fillColor: 'orange',
+                      fillOpacity: 0.5,
+                      radius: 300
+                  }).addTo(markersLayer);
+                }
+              }
+            }
 
-            var circle = L.circle([40.516666666667, -77.033333333333], {
-                color: 'red',
-                fillColor: '#f03',
-                fillOpacity: 0.5,
-                radius: 500
-            }).addTo(map);
+            function moveEndOnMap(){
+              if(markerCounter > 900){ markersLayer.clearLayers(); }
+              var bounds = map.getBounds();
+              findPointsInBound(bounds);
+            }
+
+            function getSpecificFish(latitude, longitude){
+
+              var fish = "fish not found";
+
+              for (let i = 0; i < fishList.length; i++) {
+                if(fishList[i].latitude == latitude && fishList[i].longitude == longitude){
+                  fish = "<div class='wrapperDiv'>" +
+                         "<h3>Fish Info:</h3>" +
+                         "<div class='dataLine dataLineHeader'><h4 style='display:inline'>Fish name: </h4>" + fishList[i].name +
+                         "<div class='dataLine dataLineHeader'><h4 style='display:inline'>Country: </h4>" + fishList[i].country +
+                         "<div class='dataLine dataLineHeader'><h4 style='display:inline'>Area: </h4>" + fishList[i].area +
+                         "<div class='dataLine dataLineHeader'><h4 style='display:inline'>Habitat: </h4>" + fishList[i].habitat +
+                         "<div class='dataLine dataLineHeader'><h4 style='display:inline'>Water type: </h4>" + fishList[i].waterType +
+                         "<div class='dataLine dataLineHeader'><h4 style='display:inline'>Catch depth: </h4>" + fishList[i].depth +
+                         "</div>";
+                  break;
+                }
+              }
+
+              return fish;
+            }
+
+            function ajaxCall(clickedMarker){
+
+              var fish = getSpecificFish(clickedMarker.getLatLng().lat, clickedMarker.getLatLng().lng);
+
+              $.ajax({
+                   type: "GET",
+                   url: "http://localhost:8080/getWeather?latitude=" + clickedMarker.getLatLng().lat + "&longitude=" + clickedMarker.getLatLng().lng,
+                   success: function (result) {
+
+                     clickedMarker.bindPopup(fish + result).openPopup();
+                     return "click succes";
+                   },
+                   error: function (result) {
+                     console.log("Failure");
+                     return "failure";
+                   }
+               });
+            }
+
+            var fishList = [[${fishlist}]];
+
+            map.on("moveend", moveEndOnMap);
+
+            markersLayer.on("click", function (event) {
+
+                var clickedMarker = event.layer;
+
+                var search = {}
+                search["latitude"] = clickedMarker.getLatLng().lat;
+                search["longitude"] = clickedMarker.getLatLng().lng;
+
+                var data = ajaxCall(clickedMarker);
+                console.log(data);
+            });
+
+
+
+            moveEndOnMap();
         </script>
     </body>
 </html>

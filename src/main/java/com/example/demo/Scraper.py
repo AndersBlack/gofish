@@ -3,16 +3,15 @@ import re
 import csv
 from bs4 import BeautifulSoup
 
+# --------------------------- Code definitions:
 class Fish:
     def __init__(self, name, country, locality, link):
         self.name = name
-        self.country = country
-        self.location = locality
+        self.country = country.replace(","," ");
+        self.location = locality.replace(","," ");
         self.link = link
 
-fishList = []
-
-# Job Index
+#Scrapes the given url for fish data
 def fishScrab():
     URL = 'https://www.fishbase.us/FishWatcher/CollectionsList.php?showAll=yes&what=all&sortby=species&allrec=on'
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
@@ -38,10 +37,7 @@ def fishScrab():
         newFish = Fish(fishName, country, local, fishLink);
         fishList.append(newFish);
 
-
-
-fishScrab()
-
+#Gets the data on the sub page for each fish
 def perFishScrab(fish):
     URL = 'https://www.fishbase.us/FishWatcher/' + fish.link;
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
@@ -58,13 +54,17 @@ def perFishScrab(fish):
         fish.waterType = tr_elems[6].find_all('td')[1].getText().strip().replace(" ","");
         fish.waterDepth = tr_elems[7].find_all('td')[1].getText().strip().replace(" ","").replace("\t","");
         fish.abundance = tr_elems[18].find_all('td')[1].getText().strip();
-        latArray = re.findall("([0-9]*[.][0-9]*)",tr_elems[8].find_all('td')[1].getText());
-        longArray = re.findall("([0-9]*[.][0-9]*)",tr_elems[9].find_all('td')[1].getText());
+        latArray = re.findall("(-?[0-9]+[.][0-9]+)",tr_elems[8].find_all('td')[1].getText());
+        longArray = re.findall("(-?[0-9]+[.][0-9]+)",tr_elems[9].find_all('td')[1].getText());
         if (len(latArray) > 0 and len(longArray) > 0):
             fish.lat = latArray
             fish.long = longArray
 
 
+# ------------------------ Code execute:
+fishList = []
+
+fishScrab()
 
 for fish in fishList:
     perFishScrab(fish);
