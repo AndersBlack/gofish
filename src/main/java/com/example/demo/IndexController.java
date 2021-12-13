@@ -31,16 +31,11 @@ public class IndexController {
     public String homePage(Model model) {
 
         List <Fish> fishList = GetFish.getAllFishInView("12.345","1.56788");
-        String lat = fishList.get(1).getLat();
-        String lng = fishList.get(1).getLong();
 
         Fish[] fishArray = new Fish[fishList.size()];
         fishList.toArray(fishArray);  //fill the array
 
         model.addAttribute("fishlist", fishArray);
-
-        model.addAttribute("lat", lat);
-        model.addAttribute("lng", lng);
 
         return "index.html";
     }

@@ -30,6 +30,8 @@ public class GetFish{
             String[] attributes = line.split(",");
             Fish fish = createFish(attributes);
 
+
+
             fishes.add(fish);
             line = br.readLine();
         }

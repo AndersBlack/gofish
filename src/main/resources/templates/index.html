@@ -30,8 +30,9 @@
                 zoomOffset: -1,
                 accessToken: 'pk.eyJ1IjoiYmxhY2tkdXgiLCJhIjoiY2t3dnRtM3doMWxnMDJvcXEzdDV3eXl5MCJ9.FCM2AN-cNIe9DM2FTGs7Fg'
             }).addTo(map);
-            
+
             var markersLayer = L.featureGroup().addTo(map);
+            markersLayer.continuousWorld = true;
 
             function findPointsInBound(bounds){
               for (let i = 0; i < fishList.length; i++) {
@@ -102,6 +103,8 @@
             markersLayer.on("click", function (event) {
 
                 var clickedMarker = event.layer;
+                var point = L.latLng(clickedMarker.getLatLng().lat, clickedMarker.getLatLng().lng)
+                map.panTo(point);
 
                 var search = {}
                 search["latitude"] = clickedMarker.getLatLng().lat;
