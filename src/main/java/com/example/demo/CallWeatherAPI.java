@@ -73,6 +73,10 @@ public class CallWeatherAPI{
 
 		ZoneId zoneId=ZoneId.of(weatherInfo.getString("timezone"));
 
+    String[] preciptype1 = null;
+    String[] preciptype2 = null;
+
+
 		JSONArray values=weatherInfo.getJSONArray("days");
     JSONObject day1 = values.getJSONObject(0);
     JSONObject day2 = values.getJSONObject(1);
@@ -89,18 +93,28 @@ public class CallWeatherAPI{
     String sunset1 = day1.getString("sunset");
     String sunset2 = day2.getString("sunset");
 
-    JSONArray precipJSON = day1.getJSONArray("preciptype");
-    String[] preciptype1 = new String[precipJSON.length()];
-    for(int i = 0; i < precipJSON.length(); i++){
-      preciptype1[i] = precipJSON.getString(i);
+    Object day1JSON = day1.get("preciptype");
+    Object day2JSON = day2.get("preciptype");
+
+    if(day1JSON instanceof JSONArray){
+      JSONArray precipJSON1 = day1.getJSONArray("preciptype");
+      preciptype1 = new String[precipJSON1.length()];
+      for(int i = 0; i < precipJSON1.length(); i++){
+        preciptype1[i] = precipJSON1.getString(i);
+      }
+    } else {
+      preciptype1[0] = "Unknown";
     }
 
-    precipJSON = day2.getJSONArray("preciptype");
-    String[] preciptype2 = new String[precipJSON.length()];
-    for(int i = 0; i < precipJSON.length(); i++){
-      preciptype2[i] = precipJSON.getString(i);
+    if(day2JSON instanceof JSONArray){
+      JSONArray precipJSON2 = day2.getJSONArray("preciptype");
+      preciptype2 = new String[precipJSON2.length()];
+      for(int i = 0; i < precipJSON2.length(); i++){
+        preciptype2[i] = precipJSON2.getString(i);
+      }
+    } else {
+      preciptype2[0] = "Unknown";
     }
-
 
     String date1 = ZonedDateTime.ofInstant(Instant.ofEpochSecond(day1.getLong("datetimeEpoch")), zoneId).format(DateTimeFormatter.ISO_LOCAL_DATE);
     String date2 = ZonedDateTime.ofInstant(Instant.ofEpochSecond(day2.getLong("datetimeEpoch")), zoneId).format(DateTimeFormatter.ISO_LOCAL_DATE);

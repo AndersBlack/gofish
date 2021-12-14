@@ -49,6 +49,7 @@ public class IndexController {
        String res = "";
        Weather weatherObject = null;
 
+       System.out.println("Recieved a click here on latitude: " + latitude + " and longitude: " + longitude);
 
        // Lav dine test her min dude.
        try{
